@@ -74,10 +74,10 @@ public class MaybeATree {
     }
 
     public MaybeATree(Level lvl, BlockPos blockPos) {
-        this.Logs = new ArrayList<>();
-        this.Leaves = new ArrayList<>();
+        Logs = new ArrayList<>();
+        Leaves = new ArrayList<>();
 
-        this.recursiveTreeFinder(lvl, blockPos);
+        recursiveTreeFinder(lvl, blockPos);
     }
 
     private void recursiveTreeFinder(Level lvl, BlockPos blockPos) {
@@ -85,27 +85,27 @@ public class MaybeATree {
             BlockPos blockToCheckPos = blockPos.offset(relative_position);
 
             // Чтобы не дублировать объекты - костылим
-            if (this.Logs.contains(blockToCheckPos) || this.Leaves.contains(blockToCheckPos)) {
+            if (Logs.contains(blockToCheckPos) || Leaves.contains(blockToCheckPos)) {
                 continue;
             }
 
             Block blockToCheck = lvl.getBlockState(blockToCheckPos).getBlock();
 
             if (BonnCapitator.isLog(BonnCapitator.getBlockName(blockToCheck))) {
-                this.addLog(blockToCheckPos);
+                addLog(blockToCheckPos);
                 recursiveTreeFinder(lvl, blockToCheckPos);
             }
             if (BonnCapitator.isLeaf(BonnCapitator.getBlockName(blockToCheck))) {
-                this.addLeaf(blockToCheckPos);
+                addLeaf(blockToCheckPos);
                 recursiveTreeFinder(lvl, blockToCheckPos);
             }
         }
     }
 
     public void breakATree(ItemStack mainTool, ItemStack offHandTool, Level lvl) {
-        List<BlockPos> blocksToDestroy = new ArrayList<>(this.Logs);
+        List<BlockPos> blocksToDestroy = new ArrayList<>(Logs);
         if (BonnCapitator.isShears(offHandTool.getItem().toString())) {
-            blocksToDestroy.addAll(this.Leaves);
+            blocksToDestroy.addAll(Leaves);
         }
 
         for (Vec3i block : blocksToDestroy) {
@@ -134,8 +134,8 @@ public class MaybeATree {
     }
 
     private int getMaxY() {
-        int maxY = this.Logs.getFirst().getY();
-        for (Vec3i block : this.Logs) {
+        int maxY = Logs.getFirst().getY();
+        for (Vec3i block : Logs) {
             if (block.getY() > maxY) {
                 maxY = block.getY();
             }
