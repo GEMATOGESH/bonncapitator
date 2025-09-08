@@ -77,10 +77,10 @@ public class MaybeATree {
         this.Logs = new ArrayList<>();
         this.Leaves = new ArrayList<>();
 
-        this.recurseTreeFinder(lvl, blockPos);
+        this.recursiveTreeFinder(lvl, blockPos);
     }
 
-    private void recurseTreeFinder(Level lvl, BlockPos blockPos) {
+    private void recursiveTreeFinder(Level lvl, BlockPos blockPos) {
         for (Vec3i relative_position : SEARCH_BOX) {
             BlockPos blockToCheckPos = blockPos.offset(relative_position);
 
@@ -93,11 +93,11 @@ public class MaybeATree {
 
             if (BonnCapitator.isLog(BonnCapitator.getBlockName(blockToCheck))) {
                 this.addLog(blockToCheckPos);
-                recurseTreeFinder(lvl, blockToCheckPos);
+                recursiveTreeFinder(lvl, blockToCheckPos);
             }
             if (BonnCapitator.isLeaf(BonnCapitator.getBlockName(blockToCheck))) {
                 this.addLeaf(blockToCheckPos);
-                recurseTreeFinder(lvl, blockToCheckPos);
+                recursiveTreeFinder(lvl, blockToCheckPos);
             }
         }
     }
