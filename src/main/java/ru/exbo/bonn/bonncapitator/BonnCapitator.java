@@ -81,7 +81,7 @@ public final class BonnCapitator {
         public static void breakSpeedEvent(PlayerEvent.BreakSpeed event) {
             // Изменяем скорость поломки, если это дерево
             if (!isValidSituation(event.getEntity(), event.getEntity().getMainHandItem().getItem(),
-                    event.getState().getBlock()) && event.getPosition().isEmpty())
+                    event.getState().getBlock()) || event.getPosition().isEmpty())
             {
                 return;
             }
