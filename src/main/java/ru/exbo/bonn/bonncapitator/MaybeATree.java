@@ -8,14 +8,14 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MaybeATree {
     // Может дерево, а может и нет
 
-    private final List<BlockPos> Logs;
-    private final List<BlockPos> Leaves;
+    private final Set<BlockPos> Logs;
+    private final Set<BlockPos> Leaves;
     private static final Vec3i[] SEARCH_BOX = {
         new Vec3i(-1, -1, -1),
         new Vec3i(-1, -1, 0),
@@ -53,11 +53,11 @@ public class MaybeATree {
         Leaves.add(leaf);
     }
 
-    public List<BlockPos> getLogs() {
+    public Set<BlockPos> getLogs() {
         return Logs;
     }
 
-    public List<BlockPos> getLeaves() {
+    public Set<BlockPos> getLeaves() {
         return Leaves;
     }
 
@@ -74,8 +74,8 @@ public class MaybeATree {
     }
 
     public MaybeATree(Level lvl, BlockPos blockPos) {
-        Logs = new ArrayList<>();
-        Leaves = new ArrayList<>();
+        Logs = new HashSet<>();
+        Leaves = new HashSet<>();
 
         recursiveTreeFinder(lvl, blockPos);
     }
@@ -103,7 +103,7 @@ public class MaybeATree {
     }
 
     public void breakATree(ItemStack mainTool, ItemStack offHandTool, Level lvl) {
-        List<BlockPos> blocksToDestroy = new ArrayList<>(Logs);
+        Set<BlockPos> blocksToDestroy = new HashSet<>(Logs);
         if (BonnCapitator.isShears(offHandTool.getItem().toString())) {
             blocksToDestroy.addAll(Leaves);
         }
@@ -134,7 +134,14 @@ public class MaybeATree {
     }
 
     private int getMaxY() {
-        int maxY = Logs.getFirst().getY();
+        // -64 минимальная высота в версии 1.21, а моды жоско привязаны
+        int maxY = -65;
+
+        var optional = Logs.stream().findFirst();
+        if (optional.isPresent()) {
+            maxY = optional.get().getY();
+        }
+
         for (Vec3i block : Logs) {
             if (block.getY() > maxY) {
                 maxY = block.getY();
