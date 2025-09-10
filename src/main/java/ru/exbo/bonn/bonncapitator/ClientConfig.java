@@ -13,6 +13,7 @@ public class ClientConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> APPLICABLE_LEAVES;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> APPLICABLE_AXES;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> APPLICABLE_SHEARS;
+    public static final ForgeConfigSpec.ConfigValue<Integer> MAXIMUM_LEAF_DIST;
 
     static {
         BUILDER.push("Bonncapitator config file");
@@ -56,6 +57,8 @@ public class ClientConfig {
         APPLICABLE_SHEARS = BUILDER.comment("Ножницы сюда").define("APPLICABLE_SHEARS", Arrays.asList(
             "minecraft:shears"
         ));
+
+        MAXIMUM_LEAF_DIST = BUILDER.comment("Максимальную дистанцию листьев от бревна сюда").define("MAXIMUM_LEAF_DIST", 3);
 
         BUILDER.pop();
         SPEC = BUILDER.build();
