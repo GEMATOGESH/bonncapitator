@@ -43,15 +43,19 @@ public final class BonnCapitator {
         return ClientConfig.APPLICABLE_AXES.get().contains(itemToCheckName);
     }
 
-    static Boolean isLog(String blockToCheckName) {
+    public static Boolean isLeafTooFar(int number) {
+         return number <= ClientConfig.MAXIMUM_LEAF_DIST.get();
+    }
+
+    public static Boolean isLog(String blockToCheckName) {
         return ClientConfig.APPLICABLE_LOGS.get().contains(blockToCheckName);
     }
 
-    static Boolean isLeaf(String blockToCheckName) {
+    public static Boolean isLeaf(String blockToCheckName) {
         return ClientConfig.APPLICABLE_LEAVES.get().contains(blockToCheckName);
     }
 
-    static Boolean isShears(String itemToCheckName) {
+    public static Boolean isShears(String itemToCheckName) {
         return ClientConfig.APPLICABLE_SHEARS.get().contains(itemToCheckName);
     }
 
