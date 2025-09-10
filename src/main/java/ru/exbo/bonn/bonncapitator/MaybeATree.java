@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class MaybeATree {
@@ -20,26 +21,26 @@ public class MaybeATree {
         new Vec3i(-1, -1, -1),
         new Vec3i(-1, -1, 0),
         new Vec3i(-1, -1, 1),
-        new Vec3i(-1, 0, -1),
-        new Vec3i(-1, 0, 0),
-        new Vec3i(-1, 0, 1),
-        new Vec3i(-1, 1, -1),
-        new Vec3i(-1, 1, 0),
-        new Vec3i(-1, 1, 1),
         new Vec3i(0, -1, -1),
         new Vec3i(0, -1, 0),
         new Vec3i(0, -1, 1),
-        new Vec3i(0, 0, -1),
-        new Vec3i(0, 0, 1),
-        new Vec3i(0, 1, -1),
-        new Vec3i(0, 1, 0),
-        new Vec3i(0, 1, 1),
         new Vec3i(1, -1, -1),
         new Vec3i(1, -1, 0),
         new Vec3i(1, -1, 1),
+        new Vec3i(-1, 0, -1),
+        new Vec3i(-1, 0, 0),
+        new Vec3i(-1, 0, 1),
+        new Vec3i(0, 0, -1),
+        new Vec3i(0, 0, 1),
         new Vec3i(1, 0, -1),
         new Vec3i(1, 0, 0),
         new Vec3i(1, 0, 1),
+        new Vec3i(-1, 1, -1),
+        new Vec3i(-1, 1, 0),
+        new Vec3i(-1, 1, 1),
+        new Vec3i(0, 1, -1),
+        new Vec3i(0, 1, 0),
+        new Vec3i(0, 1, 1),
         new Vec3i(1, 1, -1),
         new Vec3i(1, 1, 0),
         new Vec3i(1, 1, 1)
@@ -51,14 +52,6 @@ public class MaybeATree {
 
     public void addLeaf(BlockPos leaf) {
         Leaves.add(leaf);
-    }
-
-    public Set<BlockPos> getLogs() {
-        return Logs;
-    }
-
-    public Set<BlockPos> getLeaves() {
-        return Leaves;
     }
 
     public Boolean isATree() {
@@ -77,14 +70,43 @@ public class MaybeATree {
         Logs = new HashSet<>();
         Leaves = new HashSet<>();
 
-        recursiveTreeFinder(lvl, blockPos);
+        breadthTreeFinder(lvl, blockPos);
     }
 
-    private void recursiveTreeFinder(Level lvl, BlockPos blockPos) {
+    private void breadthTreeFinder(Level lvl, BlockPos blockPos) {
+        LinkedHashSet<BlockPos> queue = new LinkedHashSet<>();
+        queue.add(blockPos);
+
+        while (!queue.isEmpty()) {
+            for (Vec3i relative_position : SEARCH_BOX) {
+                BlockPos blockToCheckPos = queue.getFirst().offset(relative_position);
+
+                // Чтобы не дублировать объекты
+                if (Logs.contains(blockToCheckPos) || Leaves.contains(blockToCheckPos)) {
+                    continue;
+                }
+
+                Block blockToCheck = lvl.getBlockState(blockToCheckPos).getBlock();
+
+                if (BonnCapitator.isLog(BonnCapitator.getBlockName(blockToCheck))) {
+                    addLog(blockToCheckPos);
+                    queue.add(blockToCheckPos);
+                }
+                if (BonnCapitator.isLeaf(BonnCapitator.getBlockName(blockToCheck))) {
+                    addLeaf(blockToCheckPos);
+                    queue.add(blockToCheckPos);
+                }
+            }
+
+            queue.removeFirst();
+        }
+    }
+
+    private void depthTreeFinder(Level lvl, BlockPos blockPos) {
         for (Vec3i relative_position : SEARCH_BOX) {
             BlockPos blockToCheckPos = blockPos.offset(relative_position);
 
-            // Чтобы не дублировать объекты - костылим
+            // Чтобы не дублировать объекты
             if (Logs.contains(blockToCheckPos) || Leaves.contains(blockToCheckPos)) {
                 continue;
             }
@@ -93,11 +115,11 @@ public class MaybeATree {
 
             if (BonnCapitator.isLog(BonnCapitator.getBlockName(blockToCheck))) {
                 addLog(blockToCheckPos);
-                recursiveTreeFinder(lvl, blockToCheckPos);
+                depthTreeFinder(lvl, blockToCheckPos);
             }
             if (BonnCapitator.isLeaf(BonnCapitator.getBlockName(blockToCheck))) {
                 addLeaf(blockToCheckPos);
-                recursiveTreeFinder(lvl, blockToCheckPos);
+                depthTreeFinder(lvl, blockToCheckPos);
             }
         }
     }
