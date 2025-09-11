@@ -90,8 +90,11 @@ public class MaybeATree {
                 Block blockToCheck = lvl.getBlockState(blockToCheckPos).getBlock();
 
                 if (BonnCapitator.isLog(BonnCapitator.getBlockName(blockToCheck))) {
-                    addLog(blockToCheckPos);
-                    queue.add(new DepthBlock(blockToCheckPos, 0));
+                    // Другое бревно добавляем только если оно соседствует с бревном
+                    if (blockCurr.depth() == 0) {
+                        addLog(blockToCheckPos);
+                        queue.add(new DepthBlock(blockToCheckPos, 0));
+                    }
                 }
                 if (BonnCapitator.isLeaf(BonnCapitator.getBlockName(blockToCheck))) {
                     int depth = blockCurr.depth() + 1;
@@ -150,7 +153,7 @@ public class MaybeATree {
                 Block.dropResources(state, lvl, blockToCheckPos, entity, null, offHandTool);
             }
 
-            if (bufTool.getDamageValue() + 1 > bufTool.getMaxDamage()) {
+            if (bufTool.getDamageValue() + 1 >= bufTool.getMaxDamage() ) {
                 continue;
             }
 
