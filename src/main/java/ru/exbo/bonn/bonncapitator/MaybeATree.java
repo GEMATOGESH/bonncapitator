@@ -74,12 +74,13 @@ public class MaybeATree {
     }
 
     private void breadthTreeFinder(Level lvl, BlockPos blockPos) {
-        LinkedHashSet<BlockPos> queue = new LinkedHashSet<>();
-        queue.add(blockPos);
+        LinkedHashSet<DepthBlock> queue = new LinkedHashSet<>();
+        queue.add(new DepthBlock(blockPos, 0));
 
         while (!queue.isEmpty()) {
             for (Vec3i relative_position : SEARCH_BOX) {
-                BlockPos blockToCheckPos = queue.getFirst().offset(relative_position);
+                DepthBlock blockCurr = queue.getFirst();
+                BlockPos blockToCheckPos = blockCurr.pos().offset(relative_position);
 
                 // Чтобы не дублировать объекты
                 if (Logs.contains(blockToCheckPos) || Leaves.contains(blockToCheckPos)) {
@@ -90,11 +91,15 @@ public class MaybeATree {
 
                 if (BonnCapitator.isLog(BonnCapitator.getBlockName(blockToCheck))) {
                     addLog(blockToCheckPos);
-                    queue.add(blockToCheckPos);
+                    queue.add(new DepthBlock(blockToCheckPos, 0));
                 }
                 if (BonnCapitator.isLeaf(BonnCapitator.getBlockName(blockToCheck))) {
-                    addLeaf(blockToCheckPos);
-                    queue.add(blockToCheckPos);
+                    int depth = blockCurr.depth() + 1;
+
+                    if (!BonnCapitator.isLeafTooFar(depth)) {
+                        addLeaf(blockToCheckPos);
+                        queue.add(new DepthBlock(blockToCheckPos, depth));
+                    }
                 }
             }
 
@@ -172,4 +177,6 @@ public class MaybeATree {
 
         return maxY;
     }
+
+    private record DepthBlock(BlockPos pos, int depth) { }
 }

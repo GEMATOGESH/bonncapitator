@@ -44,7 +44,7 @@ public final class BonnCapitator {
     }
 
     public static Boolean isLeafTooFar(int number) {
-         return number <= ClientConfig.MAXIMUM_LEAF_DIST.get();
+         return number > ClientConfig.MAXIMUM_LEAF_DIST.get();
     }
 
     public static Boolean isLog(String blockToCheckName) {
