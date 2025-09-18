@@ -25,6 +25,7 @@ public final class BonnCapitator {
     public static final String MODID = "bonncapitator";
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Random rand = new Random();
 
     public BonnCapitator(FMLJavaModLoadingContext context) {
         context.registerConfig(ModConfig.Type.COMMON, ClientConfig.SPEC);
@@ -37,6 +38,14 @@ public final class BonnCapitator {
         }
 
         return blockToCheckNameKey.toString();
+    }
+
+    public static Boolean isCasinoAllowed(int height) {
+        return height >= ClientConfig.TREE_HEIGHT_FOR_CASINO_ACTIVATION.get();
+    }
+
+    public static Boolean isCasinoWon() {
+        return ClientConfig.CASINO_LOOT_CHANCE.get() < rand.nextInt(100);
     }
 
     private static Boolean isAxe(String itemToCheckName) {

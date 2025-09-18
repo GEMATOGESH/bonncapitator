@@ -3,6 +3,7 @@ package ru.exbo.bonn.bonncapitator;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class ClientConfig {
@@ -14,6 +15,8 @@ public class ClientConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> APPLICABLE_AXES;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> APPLICABLE_SHEARS;
     public static final ForgeConfigSpec.ConfigValue<Integer> MAXIMUM_LEAF_DIST;
+    public static final ForgeConfigSpec.ConfigValue<Integer> TREE_HEIGHT_FOR_CASINO_ACTIVATION;
+    public static final ForgeConfigSpec.ConfigValue<Integer> CASINO_LOOT_CHANCE;
 
     static {
         BUILDER.push("Bonncapitator config file");
@@ -59,8 +62,11 @@ public class ClientConfig {
         ));
 
         MAXIMUM_LEAF_DIST = BUILDER.comment("Максимальную дистанцию листьев от бревна сюда").define("MAXIMUM_LEAF_DIST", 3);
+        TREE_HEIGHT_FOR_CASINO_ACTIVATION = BUILDER.comment("Высота дерева для активации казино сюда").define("TREE_HEIGHT_FOR_CASINO_ACTIVATION", 3);
+        CASINO_LOOT_CHANCE = BUILDER.comment("Шанс проиграть в казино").define("CASINO_LOOT_CHANCE", 0);
 
         BUILDER.pop();
         SPEC = BUILDER.build();
     }
 }
+

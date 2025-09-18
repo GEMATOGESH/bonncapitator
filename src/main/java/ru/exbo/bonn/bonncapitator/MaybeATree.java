@@ -2,11 +2,13 @@ package ru.exbo.bonn.bonncapitator;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -17,6 +19,7 @@ public class MaybeATree {
 
     private final Set<BlockPos> Logs;
     private final Set<BlockPos> Leaves;
+    private int height;
     private static final Vec3i[] SEARCH_BOX = {
         new Vec3i(-1, -1, -1),
         new Vec3i(-1, -1, 0),
@@ -60,15 +63,16 @@ public class MaybeATree {
 
     public int getTreeHeight() {
         if (!Logs.isEmpty()) {
-            return getMaxY();
+            height = getMaxY();
         }
 
-        return 0;
+        return height;
     }
 
     public MaybeATree(Level lvl, BlockPos blockPos) {
         Logs = new HashSet<>();
         Leaves = new HashSet<>();
+        height = -1;
 
         breadthTreeFinder(lvl, blockPos);
     }
@@ -151,6 +155,18 @@ public class MaybeATree {
                 BlockState state = lvl.getBlockState(blockToCheckPos);
                 BlockEntity entity= lvl.getBlockEntity(blockToCheckPos);
                 Block.dropResources(state, lvl, blockToCheckPos, entity, null, offHandTool);
+            }
+            else {
+                if (BonnCapitator.isCasinoAllowed(height)) {
+                    String logId = BonnCapitator.getBlockName(blockToCheck);
+
+                    if (BonnCapitator.isCasinoWon()) {
+                        if (Casino.isThereLoot(logId)) {
+                            String itemId = Casino.getRandomLoot(logId);
+                            // TODO
+                        }
+                    }
+                }
             }
 
             if (bufTool.getDamageValue() + 1 >= bufTool.getMaxDamage() ) {
