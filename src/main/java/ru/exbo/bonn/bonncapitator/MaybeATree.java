@@ -2,13 +2,14 @@ package ru.exbo.bonn.bonncapitator;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -63,7 +64,20 @@ public class MaybeATree {
 
     public int getTreeHeight() {
         if (!Logs.isEmpty()) {
-            height = getMaxY();
+            var optional = Logs.stream().findFirst();
+            int maxY = optional.get().getY();
+            int minY = optional.get().getY();
+
+            for (Vec3i block : Logs) {
+                if (block.getY() > maxY) {
+                    maxY = block.getY();
+                }
+                if (block.getY() < minY) {
+                    minY = block.getY();
+                }
+            }
+
+            height = maxY - minY + 1;
         }
 
         return height;
@@ -112,8 +126,11 @@ public class MaybeATree {
 
             queue.removeFirst();
         }
+
+        height = getTreeHeight();
     }
 
+    @Deprecated
     private void depthTreeFinder(Level lvl, BlockPos blockPos) {
         for (Vec3i relative_position : SEARCH_BOX) {
             BlockPos blockToCheckPos = blockPos.offset(relative_position);
@@ -162,8 +179,9 @@ public class MaybeATree {
 
                     if (BonnCapitator.isCasinoWon()) {
                         if (Casino.isThereLoot(logId)) {
-                            String itemId = Casino.getRandomLoot(logId);
-                            // TODO
+                            String lootId = Casino.getRandomLoot(logId);
+                            Item loot = BonnCapitator.getLoot(lootId);
+                            // TODO Spawn loot in world
                         }
                     }
                 }
@@ -177,24 +195,6 @@ public class MaybeATree {
 
             bufTool.setDamageValue(bufTool.getDamageValue() + 1);
         }
-    }
-
-    private int getMaxY() {
-        // -64 минимальная высота в версии 1.21, а моды жоско привязаны
-        int maxY = -65;
-
-        var optional = Logs.stream().findFirst();
-        if (optional.isPresent()) {
-            maxY = optional.get().getY();
-        }
-
-        for (Vec3i block : Logs) {
-            if (block.getY() > maxY) {
-                maxY = block.getY();
-            }
-        }
-
-        return maxY;
     }
 
     private record DepthBlock(BlockPos pos, int depth) { }

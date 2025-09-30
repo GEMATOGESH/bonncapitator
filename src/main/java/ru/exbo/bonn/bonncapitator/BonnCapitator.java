@@ -2,6 +2,7 @@ package ru.exbo.bonn.bonncapitator;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -38,6 +39,11 @@ public final class BonnCapitator {
         }
 
         return blockToCheckNameKey.toString();
+    }
+
+    static Item getLoot(String lootID) {
+        String[] domainWithName = lootID.split(":");
+        return ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(domainWithName[0], domainWithName[1]));
     }
 
     public static Boolean isCasinoAllowed(int height) {
@@ -107,8 +113,7 @@ public final class BonnCapitator {
                 return;
             }
 
-            int topBlockPosY = tree.getTreeHeight();
-            int height = topBlockPosY - blockPos.getY() + 1;
+            int height = tree.getTreeHeight();
 
             float newSpeed = event.getOriginalSpeed() / height;
             event.setNewSpeed(newSpeed);
