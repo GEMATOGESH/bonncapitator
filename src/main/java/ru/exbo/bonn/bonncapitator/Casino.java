@@ -3,18 +3,21 @@ package ru.exbo.bonn.bonncapitator;
 import java.util.*;
 
 public class Casino {
-    private record ItemWithWeight (String id, int weight) { }
+    // https://blog.bruce-hill.com/a-faster-weighted-random-choice
+    // https://en.wikipedia.org/wiki/Alias_method
+
+    public record ItemWithWeight (String id, int weight, int minAmount, int maxAmount) { }
     private record Probability (double probability, int alias) { }
     private static final HashMap<String, Probability[]> lootTables = new HashMap<>();
     private static final HashMap<String, List<ItemWithWeight>> loot = new HashMap<>();
     private static final Random random = new Random();
 
     static {
-        ItemWithWeight poppy = new ItemWithWeight("minecraft:poppy", 40);
-        ItemWithWeight diamond = new ItemWithWeight("minecraft:diamond", 25);
-        ItemWithWeight stone = new ItemWithWeight("minecraft:stone", 15);
-        ItemWithWeight sand = new ItemWithWeight("minecraft:sand", 10);
-        ItemWithWeight cobblestone = new ItemWithWeight("minecraft:cobblestone", 10);
+        ItemWithWeight poppy = new ItemWithWeight("minecraft:poppy",             40,  1, 3);
+        ItemWithWeight diamond = new ItemWithWeight("minecraft:diamond",         25,  4, 6);
+        ItemWithWeight stone = new ItemWithWeight("minecraft:stone",             15,  7, 10);
+        ItemWithWeight sand = new ItemWithWeight("minecraft:sand",               10, 11, 14);
+        ItemWithWeight cobblestone = new ItemWithWeight("minecraft:cobblestone", 10, 15, 18);
 
         List<ItemWithWeight> lootTable = new ArrayList<>();
         lootTable.add(poppy);
@@ -45,7 +48,7 @@ public class Casino {
             return lootTables.get(logId);
         }
 
-        var lootTable = loot.get(logId);
+        List<ItemWithWeight> lootTable = loot.get(logId);
 
         int totalWeight = 0;
         for (ItemWithWeight item : lootTable) {
@@ -53,25 +56,24 @@ public class Casino {
         }
 
         int[] alias = new int[lootTable.size()];
-        Arrays.fill(alias, -1);
 
         double avg = (double) totalWeight / lootTable.size();
-        ArrayList<Double> probabilities = new ArrayList<>();
 
-        for (ItemWithWeight loot : lootTable) {
-            probabilities.add((double) loot.weight());
+        double[] probabilities = new double[lootTable.size()];
+        for (int i = 0; i < lootTable.size(); i++) {
+            probabilities[i] = lootTable.get(i).weight();
         }
 
         Deque<Integer> small = new ArrayDeque<>();
         Deque<Integer> big = new ArrayDeque<>();
 
-        for (int i = 0; i < probabilities.size(); ++i) {
-            if (probabilities.get(i) >= avg)
+        for (int i = 0; i < lootTable.size(); ++i) {
+            if (probabilities[i] >= avg)
                 big.add(i);
             else
                 small.add(i);
 
-            probabilities.set(i, probabilities.get(i) / avg);
+            probabilities[i] /= avg;
         }
 
         int less = small.removeFirst();
@@ -80,8 +82,8 @@ public class Casino {
         while (less != -1 && more != -1) {
             alias[less] = more;
 
-            probabilities.set(more, probabilities.get(more) - (1 - probabilities.get(less)));
-            if (probabilities.get(more) < 1) {
+            probabilities[more] -= (1 - probabilities[less]);
+            if (probabilities[more] < 1) {
                 less = more;
                 if (!big.isEmpty()) {
                     more = big.removeFirst();
@@ -102,21 +104,24 @@ public class Casino {
 
         Probability[] table = new Probability[lootTable.size()];
         for (int i = 0; i < lootTable.size(); i++) {
-            table[i] = new Probability(probabilities.get(i), alias[i]);
+            table[i] = new Probability(probabilities[i], alias[i]);
         }
         lootTables.put(logId, table);
         return table;
     }
 
-    public static String getRandomLoot(String logId) {
+    public static ItemWithWeight getRandomLoot(String logId) {
         Probability[] table = getLootTable(logId);
 
-        double randomio = random.nextDouble() * table.length;
-        int i = (int)randomio;
+        double r = random.nextDouble() * table.length;
+        int i = (int)r;
         Probability prob = table[i];
 
-        int lootId = (randomio - i) > prob.probability ? prob.alias : i;
-        var res = loot.get(logId).get(lootId).id();
-        return res;
+        int lootId = (r - i) > prob.probability() ? prob.alias() : i;
+        return loot.get(logId).get(lootId);
+    }
+
+    public static int getLootAmount(ItemWithWeight item) {
+        return random.nextInt(item.minAmount(), item.maxAmount());
     }
 }

@@ -2,9 +2,7 @@ package ru.exbo.bonn.bonncapitator;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -179,9 +177,12 @@ public class MaybeATree {
 
                     if (BonnCapitator.isCasinoWon()) {
                         if (Casino.isThereLoot(logId)) {
-                            String lootId = Casino.getRandomLoot(logId);
-                            Item loot = BonnCapitator.getLoot(lootId);
-                            // TODO Spawn loot in world
+                            Casino.ItemWithWeight loot = Casino.getRandomLoot(logId);
+                            int amount = Casino.getLootAmount(loot);
+                            ItemStack stack = new ItemStack(BonnCapitator.getLoot(loot.id()), amount);
+
+                            ItemEntity entity = new ItemEntity(lvl, block.getX(), block.getY(), block.getZ(), stack);
+                            lvl.addFreshEntity(entity);
                         }
                     }
                 }
