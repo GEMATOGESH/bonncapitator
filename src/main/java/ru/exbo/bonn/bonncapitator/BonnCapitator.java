@@ -1,6 +1,5 @@
 package ru.exbo.bonn.bonncapitator;
 
-import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -12,10 +11,9 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.slf4j.Logger;
 
 import java.util.*;
 
@@ -25,14 +23,14 @@ public final class BonnCapitator {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "bonncapitator";
     // Directly reference a slf4j logger
-    private static final Logger LOGGER = LogUtils.getLogger();
+    // private static final Logger LOGGER = LogUtils.getLogger();
     private static final Random rand = new Random();
 
     public BonnCapitator(FMLJavaModLoadingContext context) {
-        context.registerConfig(ModConfig.Type.COMMON, ClientConfig.SPEC);
+        ConfigManager.loadConfig();
     }
 
-    static String getBlockName(Block blockToCheck) {
+    public static String getBlockName(Block blockToCheck) {
         var blockToCheckNameKey = ForgeRegistries.BLOCKS.getKey(blockToCheck);
         if (Objects.isNull(blockToCheckNameKey)) {
             return null;
@@ -41,37 +39,47 @@ public final class BonnCapitator {
         return blockToCheckNameKey.toString();
     }
 
-    static Item getLoot(String lootID) {
+    public static Item getLoot(String lootID) {
         String[] domainWithName = lootID.split(":");
         return ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(domainWithName[0], domainWithName[1]));
     }
 
-    public static Boolean isCasinoAllowed(int height) {
-        return height >= ClientConfig.TREE_HEIGHT_FOR_CASINO_ACTIVATION.get();
+    public static boolean isCasinoAllowed(int height) {
+        return height >= ConfigManager.getTreeHeightForCasinoActivation();
+    }
+
+    public static List<Casino.ItemWithWeight> getCasinoItems() {
+        return ConfigManager.getCasinoItems();
     }
 
     public static Boolean isCasinoWon() {
-        return ClientConfig.CASINO_LOOT_CHANCE.get() < rand.nextInt(100);
+        return ConfigManager.getCasinoLooseChance() < rand.nextInt(100);
     }
 
     private static Boolean isAxe(String itemToCheckName) {
-        return ClientConfig.APPLICABLE_AXES.get().contains(itemToCheckName);
+        return ConfigManager.getApplicableAxes().contains(itemToCheckName);
     }
 
     public static Boolean isLeafTooFar(int number) {
-         return number > ClientConfig.MAXIMUM_LEAF_DIST.get();
+        return number > ConfigManager.getMaxLeafDist();
     }
 
     public static Boolean isLog(String blockToCheckName) {
-        return ClientConfig.APPLICABLE_LOGS.get().contains(blockToCheckName);
+        return ConfigManager.getApplicableLogs().contains(blockToCheckName);
+    }
+
+    public static String[] getLogs() {
+        String[] logs = new String[ConfigManager.getApplicableLogs().size()];
+        ConfigManager.getApplicableLogs().toArray(logs);
+        return logs;
     }
 
     public static Boolean isLeaf(String blockToCheckName) {
-        return ClientConfig.APPLICABLE_LEAVES.get().contains(blockToCheckName);
+        return ConfigManager.getApplicableLeaves().contains(blockToCheckName);
     }
 
     public static Boolean isShears(String itemToCheckName) {
-        return ClientConfig.APPLICABLE_SHEARS.get().contains(itemToCheckName);
+        return ConfigManager.getApplicableShears().contains(itemToCheckName);
     }
 
     @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -88,11 +96,7 @@ public final class BonnCapitator {
             }
 
             // Проверяем с бревном ли взаимодействие
-            if (!isLog(getBlockName(block))) {
-                return false;
-            }
-
-            return true;
+            return isLog(getBlockName(block));
         }
 
         @SubscribeEvent
@@ -146,5 +150,17 @@ public final class BonnCapitator {
             tree.breakATree(mainTool, offHandTool, lvl);
         }
     }
-}
 
+    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ConfigEventHandler {
+        @SubscribeEvent
+        public static void onConfigLoad(ModConfigEvent.Loading event) {
+            Casino.reloadCasino();
+        }
+
+        @SubscribeEvent
+        public static void onConfigReload(ModConfigEvent.Reloading event) {
+            Casino.reloadCasino();
+        }
+    }
+}

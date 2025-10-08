@@ -7,36 +7,19 @@ public class Casino {
     // https://en.wikipedia.org/wiki/Alias_method
 
     public record ItemWithWeight (String id, int weight, int minAmount, int maxAmount) { }
+
     private record Probability (double probability, int alias) { }
     private static final HashMap<String, Probability[]> lootTables = new HashMap<>();
     private static final HashMap<String, List<ItemWithWeight>> loot = new HashMap<>();
     private static final Random random = new Random();
 
-    static {
-        ItemWithWeight poppy = new ItemWithWeight("minecraft:poppy",             40,  1, 3);
-        ItemWithWeight diamond = new ItemWithWeight("minecraft:diamond",         25,  4, 6);
-        ItemWithWeight stone = new ItemWithWeight("minecraft:stone",             15,  7, 10);
-        ItemWithWeight sand = new ItemWithWeight("minecraft:sand",               10, 11, 14);
-        ItemWithWeight cobblestone = new ItemWithWeight("minecraft:cobblestone", 10, 15, 18);
+    public static void reloadCasino() {
+        List<Casino.ItemWithWeight> items = BonnCapitator.getCasinoItems();
+        String[] logs = BonnCapitator.getLogs();
 
-        List<ItemWithWeight> lootTable = new ArrayList<>();
-        lootTable.add(poppy);
-        lootTable.add(diamond);
-        lootTable.add(stone);
-        lootTable.add(sand);
-        lootTable.add(cobblestone);
-
-        loot.put("minecraft:oak_log", lootTable);
-        loot.put("minecraft:spruce_log", lootTable);
-        loot.put("minecraft:birch_log", lootTable);
-        loot.put("minecraft:jungle_log", lootTable);
-        loot.put("minecraft:acacia_log", lootTable);
-        loot.put("minecraft:dark_oak_log", lootTable);
-        loot.put("minecraft:mangrove_log", lootTable);
-        loot.put("minecraft:cherry_log", lootTable);
-        loot.put("minecraft:pale_oak_log", lootTable);
-        loot.put("minecraft:crimson_stem", lootTable);
-        loot.put("minecraft:warped_stem", lootTable);
+        for (String log: logs) {
+            loot.put(log, items);
+        }
     }
 
     public static Boolean isThereLoot(String logId) {
