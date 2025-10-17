@@ -4,31 +4,59 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 
+import javax.annotation.Nullable;
 import java.io.*;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
 
 public class ConfigManager {
-    private static final String configPath = "config\\bonncapitator.json";
+    private static final String mainConfigPath = "config\\bonncapitator-main.json";
+    private static final String shuffleConfigPath = "config\\bonncapitator-shuffle-bags.json";
+    private static final String fillersConfigPath = "config\\bonncapitator-fillers.json";
 
-    private record Config(List<String> applicableLogs, List<String> applicableLeaves, List<String> applicableAxes,
-                          List<String> applicableShears, int maxLeafDist, int treeHeightForCasinoActivation,
-                          int casinoLooseChance, List<Casino.ItemWithWeight> casinoItems) { }
-    static Config conf;
+    private record MainConfig(List<String> applicableLogs, List<String> applicableLeaves, List<String> applicableAxes,
+                              List<String> applicableShears, int maxLeafDist, int treeHeightForCasinoActivation,
+                              int casinoLooseChance, List<Casino.ItemWithWeight> casinoItems) { }
+
+    private record ShuffleConfig(Hashtable<String, ShuffleBagItem[]> shuffleBags) { }
+
+    private record ShuffleBagItem(@Nullable Integer amount, @Nullable Stack stack,
+                                  @Nullable String loot, @Nullable String bag) { }
+    private record Stack(String id, int stackSize, @Nullable Double weight) { }
+
+    static MainConfig mainConfig;
+    static ShuffleConfig shuffleConfig;
+    static ShuffleConfig fillersConfig;
 
     public static void loadConfig() {
         Gson gson = new Gson();
 
         try {
-            JsonReader reader = new JsonReader(new FileReader(configPath));
-            conf = gson.fromJson(reader, Config.class);
+            JsonReader reader = new JsonReader(new FileReader(mainConfigPath));
+            mainConfig = gson.fromJson(reader, MainConfig.class);
         }
         catch (FileNotFoundException e) {
-            createConfig();
+            createMainConfig();
+        }
+
+        try {
+            JsonReader reader = new JsonReader(new FileReader(shuffleConfigPath));
+            shuffleConfig = gson.fromJson(reader, ShuffleConfig.class);
+        }
+        catch (FileNotFoundException e) {
+            createShuffleConfig();
+        }
+
+        try {
+            JsonReader reader = new JsonReader(new FileReader(fillersConfigPath));
+            fillersConfig = gson.fromJson(reader, ShuffleConfig.class);
+        }
+        catch (FileNotFoundException e) {
+            createFillersConfig();
         }
     }
 
-    private static void createConfig() {
+    private static void createMainConfig() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         List<String> applicableLogs = Arrays.asList(
@@ -81,44 +109,106 @@ public class ConfigManager {
                 new Casino.ItemWithWeight("minecraft:coal", 20, 10, 50)
         );
 
-        conf = new Config(applicableLogs, applicableLeaves, applicableAxes, applicableShears, maxLeafDist,
+        mainConfig = new MainConfig(applicableLogs, applicableLeaves, applicableAxes, applicableShears, maxLeafDist,
                 treeHeightForCasinoActivation, casinoLooseChance, casinoItems);
 
-        try (Writer writer = new FileWriter(configPath)) {
-            gson.toJson(conf, writer);
+        try (Writer writer = new FileWriter(mainConfigPath)) {
+            gson.toJson(mainConfig, writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void createShuffleConfig() {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        ShuffleBagItem gold = new ShuffleBagItem(50, new Stack("minecraft:gold_ingot", 1, null),
+                null, null);
+        ShuffleBagItem copper = new ShuffleBagItem(50, new Stack("minecraft:copper_ingot", 2, null),
+                null, null);
+        ShuffleBagItem iron = new ShuffleBagItem(10, new Stack("minecraft:iron_ingot", 3, null),
+                null, null);
+
+        ShuffleBagItem fillers = new ShuffleBagItem(1, null, "fillers", null);
+
+        ShuffleBagItem bag = new ShuffleBagItem(1, null, null, "bag_rare");
+
+        ShuffleBagItem[] example = {
+                gold,
+                copper,
+                iron,
+                fillers,
+                bag
+        };
+
+        Hashtable<String, ShuffleBagItem[]> shuffle_bags = new Hashtable<>();
+        shuffle_bags.put("example_bag", example);
+
+        shuffleConfig = new ShuffleConfig(shuffle_bags);
+
+        try (Writer writer = new FileWriter(shuffleConfigPath)) {
+            gson.toJson(shuffleConfig, writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void createFillersConfig() {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        ShuffleBagItem apple = new ShuffleBagItem(null, new Stack("minecraft:apple", 7, 0.3),
+                null, null);
+        ShuffleBagItem stick = new ShuffleBagItem(null, new Stack("minecraft:stick", 8, 0.6),
+                null, null);
+        ShuffleBagItem kelp = new ShuffleBagItem(null, new Stack("minecraft:kelp", 9, 0.1),
+                null, null);
+
+        ShuffleBagItem[] fillers = {
+                apple,
+                stick,
+                kelp
+        };
+
+        Hashtable<String, ShuffleBagItem[]> casino_fillers = new Hashtable<>();
+        casino_fillers.put("casino_fillers", fillers);
+
+        fillersConfig = new ShuffleConfig(casino_fillers);
+
+        try (Writer writer = new FileWriter(fillersConfigPath)) {
+            gson.toJson(fillersConfig, writer);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public static List<Casino.ItemWithWeight> getCasinoItems() {
-        return conf.casinoItems();
+        return mainConfig.casinoItems();
     }
 
     public static int getTreeHeightForCasinoActivation() {
-        return conf.treeHeightForCasinoActivation();
+        return mainConfig.treeHeightForCasinoActivation();
     }
 
     public static int getCasinoLooseChance() {
-        return conf.casinoLooseChance();
+        return mainConfig.casinoLooseChance();
     }
     public static Integer getMaxLeafDist() {
-        return conf.maxLeafDist();
+        return mainConfig.maxLeafDist();
     }
 
     public static List<String> getApplicableShears() {
-        return conf.applicableShears();
+        return mainConfig.applicableShears();
     }
 
     public static List<String> getApplicableAxes() {
-        return conf.applicableAxes();
+        return mainConfig.applicableAxes();
     }
 
     public static List<String> getApplicableLeaves() {
-        return conf.applicableLeaves();
+        return mainConfig.applicableLeaves();
     }
 
     public static List<String> getApplicableLogs() {
-        return conf.applicableLogs();
+        return mainConfig.applicableLogs();
     }
 }
