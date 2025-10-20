@@ -29,12 +29,18 @@ public class Casino {
         return shuffleBagId != null;
     }
 
-    private static Probability[] getLootTable(String shuffleBagId, List<Stack> items) {
+    private static Probability[] getLootTable(String shuffleBagId, ShuffleBagItem[] shuffleItems) {
         if (lootTable.containsKey(shuffleBagId)) {
             return lootTable.get(shuffleBagId);
         }
 
-        int totalWeight = 0;
+        double totalWeight = 0;
+
+        List<Stack> items = new ArrayList<>();
+        for (ShuffleBagItem item : shuffleItems) {
+            items.add(item.stack());
+        }
+
         for (Stack item : items) {
             totalWeight += item.weight();
         }
@@ -90,7 +96,8 @@ public class Casino {
         for (int i = 0; i < items.size(); i++) {
             table[i] = new Probability(probabilities[i], alias[i]);
         }
-        Casino.lootTable.put(shuffleBagId, table);
+
+        lootTable.put(shuffleBagId, table);
         return table;
     }
 
@@ -145,13 +152,10 @@ public class Casino {
             return getRandomLoot(playerId, prize.bag());
         }
 
-        List<Stack> fillers = new ArrayList<>();
-        for (ShuffleBagItem item : ConfigManager.getFillerBagItems(prize.loot())) {
-            fillers.add(item.stack());
-        }
-        Probability[] table = getLootTable(shuffleBagId, fillers);
+        Probability[] table = getLootTable(shuffleBagId, ConfigManager.getFillerBagItems(prize.loot()));
 
-        double r = random.nextDouble() * table.length;
+        Random coin = new Random();
+        double r = coin.nextDouble() * table.length;
         int i = (int)r;
         Probability prob = table[i];
 
