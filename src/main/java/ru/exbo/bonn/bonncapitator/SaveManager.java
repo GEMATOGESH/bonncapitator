@@ -25,7 +25,7 @@ public class SaveManager implements ICasinoCapability {
             this.attempt += 1;
             return this.attempt;
         }
-    };
+    }
 
     private static final HashMap<String, HashMap<String, ShuffleBagSave>> playerHandler = new HashMap<>();
 

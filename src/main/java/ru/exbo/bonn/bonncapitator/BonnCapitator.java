@@ -11,7 +11,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -148,19 +147,6 @@ public final class BonnCapitator {
             ItemStack offHandTool = event.getPlayer().getOffhandItem();
 
             tree.breakATree(event.getPlayer(), mainTool, offHandTool, lvl);
-        }
-    }
-
-    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class ConfigEventHandler {
-        @SubscribeEvent
-        public static void onConfigLoad(ModConfigEvent.Loading event) {
-            Casino.reloadCasino();
-        }
-
-        @SubscribeEvent
-        public static void onConfigReload(ModConfigEvent.Reloading event) {
-            Casino.reloadCasino();
         }
     }
 }

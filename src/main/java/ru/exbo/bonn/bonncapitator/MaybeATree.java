@@ -167,7 +167,7 @@ public class MaybeATree {
             if (!BonnCapitator.isLog(BonnCapitator.getBlockName(blockToCheck))) {
                 bufTool = offHandTool;
 
-                // Спасибо Даня за прекрасные тзшки
+                // Спасибо Даня за прекрасные задачи
                 BlockState state = lvl.getBlockState(blockToCheckPos);
                 BlockEntity entity= lvl.getBlockEntity(blockToCheckPos);
                 Block.dropResources(state, lvl, blockToCheckPos, entity, null, offHandTool);

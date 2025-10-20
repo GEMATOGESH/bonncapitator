@@ -10,19 +10,10 @@ public class Casino {
     private record Probability (double probability, int alias) { }
     private static final HashMap<String, Probability[]> lootTable = new HashMap<>();
 
-    // Не уверен насколько хорошая идея делать их пабликами. Будто бы тогда лучше просто голыми отдельными классами хранить
+    // Не уверен насколько хорошая идея делать их публичными. Будто бы тогда лучше просто голыми отдельными классами хранить
     public record ShuffleBagItem(@Nullable Integer amount, @Nullable Stack stack,
                                   @Nullable String loot, @Nullable String bag) { }
     public record Stack(String id, int stackSize, @Nullable Double weight) { }
-
-    public static void reloadCasino() {
-//        HashMap<String, String> items = BonnCapitator.getCasinoItems();
-//        String[] logs = BonnCapitator.getLogs();
-//
-//        for (String log: logs) {
-//            loot.put(log, items);
-//        }
-    }
 
     public static Boolean isThereLoot(String logId) {
         String shuffleBagId = ConfigManager.getShuffleBagName(logId);
@@ -47,7 +38,7 @@ public class Casino {
 
         int[] alias = new int[items.size()];
 
-        double avg = (double) totalWeight / items.size();
+        double avg = totalWeight / items.size();
 
         double[] probabilities = new double[items.size()];
         for (int i = 0; i < items.size(); i++) {
