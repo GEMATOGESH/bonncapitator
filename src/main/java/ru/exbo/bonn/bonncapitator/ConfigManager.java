@@ -194,10 +194,6 @@ public class ConfigManager {
         }
     }
 
-    public static HashMap<String, String> getCasinoItems() {
-        return mainConfig.casinoItems();
-    }
-
     public static int getTreeHeightForCasinoActivation() {
         return mainConfig.treeHeightForCasinoActivation();
     }
