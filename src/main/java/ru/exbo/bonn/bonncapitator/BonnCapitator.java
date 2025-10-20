@@ -47,10 +47,6 @@ public final class BonnCapitator {
         return height >= ConfigManager.getTreeHeightForCasinoActivation();
     }
 
-    public static HashMap<String, String> getCasinoItems() {
-        return ConfigManager.getCasinoItems();
-    }
-
     public static Boolean isCasinoWon() {
         return ConfigManager.getCasinoLooseChance() < rand.nextInt(100);
     }
@@ -65,12 +61,6 @@ public final class BonnCapitator {
 
     public static Boolean isLog(String blockToCheckName) {
         return ConfigManager.getApplicableLogs().contains(blockToCheckName);
-    }
-
-    public static String[] getLogs() {
-        String[] logs = new String[ConfigManager.getApplicableLogs().size()];
-        ConfigManager.getApplicableLogs().toArray(logs);
-        return logs;
     }
 
     public static Boolean isLeaf(String blockToCheckName) {

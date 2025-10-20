@@ -15,11 +15,6 @@ public class Casino {
                                   @Nullable String loot, @Nullable String bag) { }
     public record Stack(String id, int stackSize, @Nullable Double weight) { }
 
-    public static Boolean isThereLoot(String logId) {
-        String shuffleBagId = ConfigManager.getShuffleBagName(logId);
-        return shuffleBagId != null;
-    }
-
     private static Probability[] getLootTable(String shuffleBagId, ShuffleBagItem[] shuffleItems) {
         if (lootTable.containsKey(shuffleBagId)) {
             return lootTable.get(shuffleBagId);
@@ -143,7 +138,8 @@ public class Casino {
             return getRandomLoot(playerId, prize.bag());
         }
 
-        Probability[] table = getLootTable(shuffleBagId, ConfigManager.getFillerBagItems(prize.loot()));
+        ShuffleBagItem[] fillers = ConfigManager.getFillerBagItems(prize.loot());
+        Probability[] table = getLootTable(shuffleBagId, fillers);
 
         Random coin = new Random();
         double r = coin.nextDouble() * table.length;
@@ -151,6 +147,6 @@ public class Casino {
         Probability prob = table[i];
 
         int lootId = (r - i) > prob.probability() ? prob.alias() : i;
-        return ConfigManager.getFillerBagItems(prize.loot())[lootId].stack();
+        return fillers[lootId].stack();
     }
 }

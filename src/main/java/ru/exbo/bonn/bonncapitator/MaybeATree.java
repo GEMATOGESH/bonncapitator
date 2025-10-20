@@ -177,7 +177,7 @@ public class MaybeATree {
                     String logId = BonnCapitator.getBlockName(blockToCheck);
 
                     if (BonnCapitator.isCasinoWon()) {
-                        if (Casino.isThereLoot(logId)) {
+                        if (ConfigManager.getShuffleBagName(logId) != null) {
                             Casino.Stack loot = Casino.getRandomLoot(player.getEncodeId(), logId);
                             ItemStack stack = new ItemStack(BonnCapitator.getLoot(loot.id()), loot.stackSize());
 
