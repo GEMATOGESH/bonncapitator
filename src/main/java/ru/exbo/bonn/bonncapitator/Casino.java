@@ -122,7 +122,7 @@ public class Casino {
         Random random = new Random(seed);
         shuffleArray(bag, random);
 
-        if (sm.getCurrentAttempt(playerId, shuffleBagId) > bag.size()) {
+        if (sm.getCurrentAttempt(playerId, shuffleBagId) + 1 > bag.size()) {
             sm.resetShuffleBag(playerId, shuffleBagId);
         }
 
