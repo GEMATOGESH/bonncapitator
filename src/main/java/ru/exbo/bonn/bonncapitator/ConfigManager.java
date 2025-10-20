@@ -1,5 +1,6 @@
 package ru.exbo.bonn.bonncapitator;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
@@ -18,15 +19,13 @@ public class ConfigManager {
                               List<String> applicableShears, int maxLeafDist, int treeHeightForCasinoActivation,
                               int casinoLooseChance, List<Casino.ItemWithWeight> casinoItems) { }
 
-    private record ShuffleConfig(Hashtable<String, ShuffleBagItem[]> shuffleBags) { }
-
     private record ShuffleBagItem(@Nullable Integer amount, @Nullable Stack stack,
                                   @Nullable String loot, @Nullable String bag) { }
     private record Stack(String id, int stackSize, @Nullable Double weight) { }
 
     static MainConfig mainConfig;
-    static ShuffleConfig shuffleConfig;
-    static ShuffleConfig fillersConfig;
+    static HashMap<String, ShuffleBagItem[]> shuffleConfig;
+    static HashMap<String, ShuffleBagItem[]> fillersConfig;
 
     public static void loadConfig() {
         Gson gson = new Gson();
@@ -41,7 +40,8 @@ public class ConfigManager {
 
         try {
             JsonReader reader = new JsonReader(new FileReader(shuffleConfigPath));
-            shuffleConfig = gson.fromJson(reader, ShuffleConfig.class);
+            TypeToken<HashMap<String, ShuffleBagItem[]>> mapType = new TypeToken<>() { };
+            shuffleConfig = gson.fromJson(reader, mapType.getType());
         }
         catch (FileNotFoundException e) {
             createShuffleConfig();
@@ -49,7 +49,8 @@ public class ConfigManager {
 
         try {
             JsonReader reader = new JsonReader(new FileReader(fillersConfigPath));
-            fillersConfig = gson.fromJson(reader, ShuffleConfig.class);
+            TypeToken<HashMap<String, ShuffleBagItem[]>> mapType = new TypeToken<>() { };
+            fillersConfig = gson.fromJson(reader, mapType.getType());
         }
         catch (FileNotFoundException e) {
             createFillersConfig();
@@ -141,10 +142,8 @@ public class ConfigManager {
                 bag
         };
 
-        Hashtable<String, ShuffleBagItem[]> shuffle_bags = new Hashtable<>();
-        shuffle_bags.put("example_bag", example);
-
-        shuffleConfig = new ShuffleConfig(shuffle_bags);
+        shuffleConfig = new HashMap<>();
+        shuffleConfig.put("example_bag", example);
 
         try (Writer writer = new FileWriter(shuffleConfigPath)) {
             gson.toJson(shuffleConfig, writer);
@@ -169,10 +168,8 @@ public class ConfigManager {
                 kelp
         };
 
-        Hashtable<String, ShuffleBagItem[]> casino_fillers = new Hashtable<>();
-        casino_fillers.put("casino_fillers", fillers);
-
-        fillersConfig = new ShuffleConfig(casino_fillers);
+        fillersConfig = new HashMap<>();
+        fillersConfig.put("casino_fillers", fillers);
 
         try (Writer writer = new FileWriter(fillersConfigPath)) {
             gson.toJson(fillersConfig, writer);
