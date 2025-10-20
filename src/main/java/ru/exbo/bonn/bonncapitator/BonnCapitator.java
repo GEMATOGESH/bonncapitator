@@ -48,7 +48,7 @@ public final class BonnCapitator {
         return height >= ConfigManager.getTreeHeightForCasinoActivation();
     }
 
-    public static List<Casino.ItemWithWeight> getCasinoItems() {
+    public static HashMap<String, String> getCasinoItems() {
         return ConfigManager.getCasinoItems();
     }
 
@@ -147,7 +147,7 @@ public final class BonnCapitator {
             // Уничтожаем дерево, при этом проверяя листву
             ItemStack offHandTool = event.getPlayer().getOffhandItem();
 
-            tree.breakATree(mainTool, offHandTool, lvl);
+            tree.breakATree(event.getPlayer(), mainTool, offHandTool, lvl);
         }
     }
 

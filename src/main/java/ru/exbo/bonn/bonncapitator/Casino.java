@@ -1,56 +1,57 @@
 package ru.exbo.bonn.bonncapitator;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class Casino {
     // https://blog.bruce-hill.com/a-faster-weighted-random-choice
     // https://en.wikipedia.org/wiki/Alias_method
 
-    public record ItemWithWeight (String id, int weight, int minAmount, int maxAmount) { }
-
     private record Probability (double probability, int alias) { }
-    private static final HashMap<String, Probability[]> lootTables = new HashMap<>();
-    private static final HashMap<String, List<ItemWithWeight>> loot = new HashMap<>();
-    private static final Random random = new Random();
+    private static final HashMap<String, Probability[]> lootTable = new HashMap<>();
+
+    // Не уверен насколько хорошая идея делать их пабликами. Будто бы тогда лучше просто голыми отдельными классами хранить
+    public record ShuffleBagItem(@Nullable Integer amount, @Nullable Stack stack,
+                                  @Nullable String loot, @Nullable String bag) { }
+    public record Stack(String id, int stackSize, @Nullable Double weight) { }
 
     public static void reloadCasino() {
-        List<Casino.ItemWithWeight> items = BonnCapitator.getCasinoItems();
-        String[] logs = BonnCapitator.getLogs();
-
-        for (String log: logs) {
-            loot.put(log, items);
-        }
+//        HashMap<String, String> items = BonnCapitator.getCasinoItems();
+//        String[] logs = BonnCapitator.getLogs();
+//
+//        for (String log: logs) {
+//            loot.put(log, items);
+//        }
     }
 
     public static Boolean isThereLoot(String logId) {
-        return loot.containsKey(logId);
+        String shuffleBagId = ConfigManager.getShuffleBagName(logId);
+        return shuffleBagId != null;
     }
 
-    private static Probability[] getLootTable(String logId) {
-        if (lootTables.containsKey(logId)) {
-            return lootTables.get(logId);
+    private static Probability[] getLootTable(String shuffleBagId, List<Stack> items) {
+        if (lootTable.containsKey(shuffleBagId)) {
+            return lootTable.get(shuffleBagId);
         }
 
-        List<ItemWithWeight> lootTable = loot.get(logId);
-
         int totalWeight = 0;
-        for (ItemWithWeight item : lootTable) {
+        for (Stack item : items) {
             totalWeight += item.weight();
         }
 
-        int[] alias = new int[lootTable.size()];
+        int[] alias = new int[items.size()];
 
-        double avg = (double) totalWeight / lootTable.size();
+        double avg = (double) totalWeight / items.size();
 
-        double[] probabilities = new double[lootTable.size()];
-        for (int i = 0; i < lootTable.size(); i++) {
-            probabilities[i] = lootTable.get(i).weight();
+        double[] probabilities = new double[items.size()];
+        for (int i = 0; i < items.size(); i++) {
+            probabilities[i] = items.get(i).weight();
         }
 
         Deque<Integer> small = new ArrayDeque<>();
         Deque<Integer> big = new ArrayDeque<>();
 
-        for (int i = 0; i < lootTable.size(); ++i) {
+        for (int i = 0; i < items.size(); ++i) {
             if (probabilities[i] >= avg)
                 big.add(i);
             else
@@ -85,26 +86,76 @@ public class Casino {
             }
         }
 
-        Probability[] table = new Probability[lootTable.size()];
-        for (int i = 0; i < lootTable.size(); i++) {
+        Probability[] table = new Probability[items.size()];
+        for (int i = 0; i < items.size(); i++) {
             table[i] = new Probability(probabilities[i], alias[i]);
         }
-        lootTables.put(logId, table);
+        Casino.lootTable.put(shuffleBagId, table);
         return table;
     }
 
-    public static ItemWithWeight getRandomLoot(String logId) {
-        Probability[] table = getLootTable(logId);
+    private static void shuffleArray(List<ShuffleBagItem> bag, Random random)
+    {
+        int index;
+        ShuffleBagItem temp;
+        for (int i = bag.size() - 1; i > 0; i--)
+        {
+            index = random.nextInt(i + 1);
+            temp = bag.get(index);
+            bag.set(index, bag.get(i));
+            bag.set(i, temp);
+        }
+    }
+
+    public static Stack getRandomLoot(String playerId, String logId) {
+        String shuffleBagId = ConfigManager.getShuffleBagName(logId);
+        ShuffleBagItem[] items = ConfigManager.getShuffleBagItems(shuffleBagId);
+
+        List<ShuffleBagItem> bag = new LinkedList<>();
+        for (ShuffleBagItem item : items) {
+            int copies = 1;
+            if (item.amount != null) {
+                copies = item.amount;
+            }
+
+            for (int i = 0; i < copies; i++) {
+                bag.add(item);
+            }
+        }
+
+        SaveManager sm = new SaveManager();
+        long seed = sm.getSeed(playerId, shuffleBagId);
+
+        Random random = new Random(seed);
+        shuffleArray(bag, random);
+
+        if (sm.getCurrentAttempt(playerId, shuffleBagId) > bag.size()) {
+            sm.resetShuffleBag(playerId, shuffleBagId);
+        }
+
+        int prizeIndex = sm.newAttempt(playerId, shuffleBagId);
+
+        ShuffleBagItem prize = bag.get(prizeIndex);
+
+        if (prize.stack() != null) {
+            return prize.stack();
+        }
+
+        if (prize.bag() != null) {
+            return getRandomLoot(playerId, prize.bag());
+        }
+
+        List<Stack> fillers = new ArrayList<>();
+        for (ShuffleBagItem item : ConfigManager.getFillerBagItems(prize.loot())) {
+            fillers.add(item.stack());
+        }
+        Probability[] table = getLootTable(shuffleBagId, fillers);
 
         double r = random.nextDouble() * table.length;
         int i = (int)r;
         Probability prob = table[i];
 
         int lootId = (r - i) > prob.probability() ? prob.alias() : i;
-        return loot.get(logId).get(lootId);
-    }
-
-    public static int getLootAmount(ItemWithWeight item) {
-        return random.nextInt(item.minAmount(), item.maxAmount());
+        return ConfigManager.getFillerBagItems(prize.loot())[lootId].stack();
     }
 }

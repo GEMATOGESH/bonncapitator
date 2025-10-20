@@ -3,6 +3,7 @@ package ru.exbo.bonn.bonncapitator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -151,7 +152,7 @@ public class MaybeATree {
         }
     }
 
-    public void breakATree(ItemStack mainTool, ItemStack offHandTool, Level lvl) {
+    public void breakATree(Player player, ItemStack mainTool, ItemStack offHandTool, Level lvl) {
         Set<BlockPos> blocksToDestroy = new HashSet<>(Logs);
         if (BonnCapitator.isShears(offHandTool.getItem().toString())) {
             blocksToDestroy.addAll(Leaves);
@@ -177,9 +178,8 @@ public class MaybeATree {
 
                     if (BonnCapitator.isCasinoWon()) {
                         if (Casino.isThereLoot(logId)) {
-                            Casino.ItemWithWeight loot = Casino.getRandomLoot(logId);
-                            int amount = Casino.getLootAmount(loot);
-                            ItemStack stack = new ItemStack(BonnCapitator.getLoot(loot.id()), amount);
+                            Casino.Stack loot = Casino.getRandomLoot(player.getEncodeId(), logId);
+                            ItemStack stack = new ItemStack(BonnCapitator.getLoot(loot.id()), loot.stackSize());
 
                             ItemEntity entity = new ItemEntity(lvl, block.getX(), block.getY(), block.getZ(), stack);
                             lvl.addFreshEntity(entity);
