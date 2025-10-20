@@ -3,7 +3,7 @@ package ru.exbo.bonn.bonncapitator;
 import java.util.HashMap;
 import java.util.Random;
 
-public class SaveManager implements CasinoCapability {
+public class SaveManager implements ICasinoCapability {
     private static class ShuffleBagSave {
         private final long seed;
         private int attempt;
@@ -21,8 +21,9 @@ public class SaveManager implements CasinoCapability {
             return attempt;
         }
 
-        public void newAttempt() {
+        public int newAttempt() {
             this.attempt += 1;
+            return this.attempt;
         }
     };
 
@@ -54,11 +55,11 @@ public class SaveManager implements CasinoCapability {
 
     @Override
     public int getCurrentAttempt(String playerId, String shuffleBagId) {
-        return playerHandler.get(playerId).get(shuffleBagId).getAttempt();
+        return playerHandler.get(playerId).get(shuffleBagId).getAttempt() + 1;
     }
 
     @Override
-    public void newAttempt(String playerId, String shuffleBagId) {
-        playerHandler.get(playerId).get(shuffleBagId).newAttempt();
+    public int newAttempt(String playerId, String shuffleBagId) {
+        return playerHandler.get(playerId).get(shuffleBagId).newAttempt();
     }
 }
