@@ -7,6 +7,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
@@ -137,6 +138,11 @@ public final class BonnCapitator {
             ItemStack offHandTool = event.getPlayer().getOffhandItem();
 
             tree.breakATree(event.getPlayer(), mainTool, offHandTool, lvl);
+        }
+
+        @SubscribeEvent
+        public static void registerCommands(RegisterCommandsEvent event){
+            CommandManager.register(event.getDispatcher());
         }
     }
 }

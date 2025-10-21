@@ -4,9 +4,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class Casino {
-    // https://blog.bruce-hill.com/a-faster-weighted-random-choice
-    // https://en.wikipedia.org/wiki/Alias_method
-
     private record Probability (double probability, int alias) { }
     private static final HashMap<String, Probability[]> lootTable = new HashMap<>();
 
@@ -16,6 +13,9 @@ public class Casino {
     public record Stack(String id, int stackSize, @Nullable Double weight) { }
 
     private static Probability[] getLootTable(String shuffleBagId, ShuffleBagItem[] shuffleItems) {
+        // https://blog.bruce-hill.com/a-faster-weighted-random-choice
+        // https://en.wikipedia.org/wiki/Alias_method
+
         if (lootTable.containsKey(shuffleBagId)) {
             return lootTable.get(shuffleBagId);
         }
@@ -100,8 +100,7 @@ public class Casino {
         }
     }
 
-    public static Stack getRandomLoot(String playerId, String logId) {
-        String shuffleBagId = ConfigManager.getShuffleBagName(logId);
+    public static Stack getRandomLoot(String playerId, String shuffleBagId) {
         ShuffleBagItem[] items = ConfigManager.getShuffleBagItems(shuffleBagId);
 
         List<ShuffleBagItem> bag = new LinkedList<>();
