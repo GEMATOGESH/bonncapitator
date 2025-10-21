@@ -1,5 +1,6 @@
 package ru.exbo.bonn.bonncapitator;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -36,10 +37,10 @@ public class CommandManager {
             assert player != null;
 
             SaveManager sm = new SaveManager();
-            int result = sm.getCurrentAttempt(player.getEncodeId(), id);
+            int result = sm.getCurrentAttempt(player.getStringUUID(), id);
 
-            player.displayClientMessage(Component.literal(String.valueOf(result)), true);
-            return 0;
+            context.getSource().getPlayer().sendSystemMessage(Component.literal(Integer.toString(result)));
+            return Command.SINGLE_SUCCESS;
         }
     }
 
@@ -60,10 +61,10 @@ public class CommandManager {
             assert player != null;
 
             SaveManager sm = new SaveManager();
-            sm.resetShuffleBag(player.getEncodeId(), id);
+            sm.resetShuffleBag(player.getStringUUID(), id);
 
-            player.displayClientMessage(Component.literal("Done!"), true);
-            return 0;
+            context.getSource().getPlayer().sendSystemMessage(Component.literal("Done!"));
+            return Command.SINGLE_SUCCESS;
         }
     }
 
@@ -83,13 +84,13 @@ public class CommandManager {
             Player player = context.getSource().getPlayer();
             assert player != null;
 
-            Casino.Stack loot = Casino.getRandomLoot(player.getEncodeId(), id);
+            Casino.Stack loot = Casino.getRandomLoot(player.getStringUUID(), id);
             ItemStack stack = new ItemStack(BonnCapitator.getLoot(loot.id()), loot.stackSize());
 
             player.getInventory().add(stack);
 
-            player.displayClientMessage(Component.literal("Done!"), true);
-            return 0;
+            context.getSource().getPlayer().sendSystemMessage(Component.literal("Done!"));
+            return Command.SINGLE_SUCCESS;
         }
     }
 
@@ -105,8 +106,8 @@ public class CommandManager {
 
             ConfigManager.loadConfig();
 
-            player.displayClientMessage(Component.literal("Done!"), true);
-            return 0;
+            context.getSource().getPlayer().sendSystemMessage(Component.literal("Done!"));
+            return Command.SINGLE_SUCCESS;
         }
     }
 }
