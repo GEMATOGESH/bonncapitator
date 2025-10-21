@@ -38,10 +38,19 @@ public class SaveManager implements ICasinoCapability {
 
         ShuffleBagSave save = new ShuffleBagSave(seed, -1);
 
-        HashMap<String, ShuffleBagSave> shuffleBag = new HashMap<>();
+        HashMap<String, ShuffleBagSave> shuffleBag;
+        if (playerHandler.containsKey(playerId)) {
+            shuffleBag = playerHandler.get(playerId);
+        }
+        else {
+            shuffleBag = new HashMap<>();
+        }
+
         shuffleBag.put(shuffleBagId, save);
 
-        playerHandler.put(playerId, shuffleBag);
+        if (!playerHandler.containsKey(playerId)) {
+            playerHandler.put(playerId, shuffleBag);
+        }
     }
 
     @Override
@@ -55,11 +64,19 @@ public class SaveManager implements ICasinoCapability {
 
     @Override
     public int getCurrentAttempt(String playerId, String shuffleBagId) {
+        if (!playerHandler.containsKey(playerId) || !playerHandler.get(playerId).containsKey(shuffleBagId)) {
+            resetShuffleBag(playerId, shuffleBagId);
+        }
+
         return playerHandler.get(playerId).get(shuffleBagId).getAttempt() + 1;
     }
 
     @Override
     public int newAttempt(String playerId, String shuffleBagId) {
+        if (!playerHandler.containsKey(playerId) || !playerHandler.get(playerId).containsKey(shuffleBagId)) {
+            resetShuffleBag(playerId, shuffleBagId);
+        }
+
         return playerHandler.get(playerId).get(shuffleBagId).newAttempt();
     }
 }
