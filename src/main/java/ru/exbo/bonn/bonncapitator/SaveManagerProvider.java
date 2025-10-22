@@ -11,7 +11,8 @@ import org.jetbrains.annotations.Nullable;
 public class SaveManagerProvider implements ICapabilitySerializable<CompoundTag> {
     // https://www.youtube.com/watch?v=My70x9LzeUM
 
-    public static Capability<SaveManager> CASINO_SAVE = CapabilityManager.get(new CapabilityToken<SaveManager>() { });
+    public static Capability<SaveManager> CASINO_SAVE = CapabilityManager.get(new CapabilityToken<>() {
+    });
 
     private SaveManager manager = null;
     private final LazyOptional<SaveManager> optional = LazyOptional.of(this::createSaveManager);
