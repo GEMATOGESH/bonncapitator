@@ -1,5 +1,12 @@
 package ru.exbo.bonn.bonncapitator;
 
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
+import net.minecraftforge.common.util.LazyOptional;
+
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -100,7 +107,7 @@ public class Casino {
         }
     }
 
-    public static Stack getRandomLoot(String playerId, String shuffleBagId) {
+    public static Stack getRandomLoot(Player player, String shuffleBagId) {
         ShuffleBagItem[] items = ConfigManager.getShuffleBagItems(shuffleBagId);
 
         List<ShuffleBagItem> bag = new LinkedList<>();
@@ -115,37 +122,43 @@ public class Casino {
             }
         }
 
-        SaveManager sm = new SaveManager();
-        long seed = sm.getSeed(playerId, shuffleBagId);
+        String playerId = player.getStringUUID();
+        if (player.getCapability(SaveManagerProvider.CASINO_SAVE).isPresent() && player.getCapability(SaveManagerProvider.CASINO_SAVE).resolve().isPresent()) {
+            SaveManager sm = player.getCapability(SaveManagerProvider.CASINO_SAVE).resolve().get();
 
-        Random random = new Random(seed);
-        shuffleArray(bag, random);
+            long seed = sm.getSeed(playerId, shuffleBagId);
 
-        if (sm.getCurrentAttempt(playerId, shuffleBagId) + 1 > bag.size()) {
-            sm.resetShuffleBag(playerId, shuffleBagId);
+            Random random = new Random(seed);
+            shuffleArray(bag, random);
+
+            if (sm.getCurrentAttempt(playerId, shuffleBagId) + 1 > bag.size()) {
+                sm.resetShuffleBag(playerId, shuffleBagId);
+            }
+
+            int prizeIndex = sm.newAttempt(playerId, shuffleBagId);
+
+            ShuffleBagItem prize = bag.get(prizeIndex);
+
+            if (prize.stack() != null) {
+                return prize.stack();
+            }
+
+            if (prize.bag() != null) {
+                return getRandomLoot(player, prize.bag());
+            }
+
+            ShuffleBagItem[] fillers = ConfigManager.getFillerBagItems(prize.loot());
+            Probability[] table = getLootTable(shuffleBagId, fillers);
+
+            Random coin = new Random();
+            double r = coin.nextDouble() * table.length;
+            int i = (int)r;
+            Probability prob = table[i];
+
+            int lootId = (r - i) > prob.probability() ? prob.alias() : i;
+            return fillers[lootId].stack();
         }
 
-        int prizeIndex = sm.newAttempt(playerId, shuffleBagId);
-
-        ShuffleBagItem prize = bag.get(prizeIndex);
-
-        if (prize.stack() != null) {
-            return prize.stack();
-        }
-
-        if (prize.bag() != null) {
-            return getRandomLoot(playerId, prize.bag());
-        }
-
-        ShuffleBagItem[] fillers = ConfigManager.getFillerBagItems(prize.loot());
-        Probability[] table = getLootTable(shuffleBagId, fillers);
-
-        Random coin = new Random();
-        double r = coin.nextDouble() * table.length;
-        int i = (int)r;
-        Probability prob = table[i];
-
-        int lootId = (r - i) > prob.probability() ? prob.alias() : i;
-        return fillers[lootId].stack();
+        return null;
     }
 }

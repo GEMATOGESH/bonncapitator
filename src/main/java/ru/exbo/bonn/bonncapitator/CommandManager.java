@@ -36,10 +36,12 @@ public class CommandManager {
             Player player = context.getSource().getPlayer();
             assert player != null;
 
-            SaveManager sm = new SaveManager();
-            int result = sm.getCurrentAttempt(player.getStringUUID(), id);
+            if (player.getCapability(SaveManagerProvider.CASINO_SAVE).isPresent() && player.getCapability(SaveManagerProvider.CASINO_SAVE).resolve().isPresent()) {
+                SaveManager sm = player.getCapability(SaveManagerProvider.CASINO_SAVE).resolve().get();
+                int result = sm.getCurrentAttempt(player.getStringUUID(), id);
 
-            context.getSource().getPlayer().sendSystemMessage(Component.literal(Integer.toString(result)));
+                context.getSource().getPlayer().sendSystemMessage(Component.literal(Integer.toString(result)));
+            }
             return Command.SINGLE_SUCCESS;
         }
     }
@@ -60,10 +62,12 @@ public class CommandManager {
             Player player = context.getSource().getPlayer();
             assert player != null;
 
-            SaveManager sm = new SaveManager();
-            sm.resetShuffleBag(player.getStringUUID(), id);
+            if (player.getCapability(SaveManagerProvider.CASINO_SAVE).isPresent() && player.getCapability(SaveManagerProvider.CASINO_SAVE).resolve().isPresent()) {
+                SaveManager sm = player.getCapability(SaveManagerProvider.CASINO_SAVE).resolve().get();
+                sm.resetShuffleBag(player.getStringUUID(), id);
 
-            context.getSource().getPlayer().sendSystemMessage(Component.literal("Done!"));
+                context.getSource().getPlayer().sendSystemMessage(Component.literal("Done!"));
+            }
             return Command.SINGLE_SUCCESS;
         }
     }
@@ -84,7 +88,7 @@ public class CommandManager {
             Player player = context.getSource().getPlayer();
             assert player != null;
 
-            Casino.Stack loot = Casino.getRandomLoot(player.getStringUUID(), id);
+            Casino.Stack loot = Casino.getRandomLoot(player, id);
             ItemStack stack = new ItemStack(BonnCapitator.getLoot(loot.id()), loot.stackSize());
 
             player.getInventory().add(stack);

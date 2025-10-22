@@ -180,7 +180,7 @@ public class MaybeATree {
                         if (ConfigManager.getShuffleBagName(logId) != null) {
                             String shuffleBagId = ConfigManager.getShuffleBagName(logId);
 
-                            Casino.Stack loot = Casino.getRandomLoot(player.getStringUUID(), shuffleBagId);
+                            Casino.Stack loot = Casino.getRandomLoot(player, shuffleBagId);
                             ItemStack stack = new ItemStack(BonnCapitator.getLoot(loot.id()), loot.stackSize());
 
                             ItemEntity entity = new ItemEntity(lvl, block.getX(), block.getY(), block.getZ(), stack);
