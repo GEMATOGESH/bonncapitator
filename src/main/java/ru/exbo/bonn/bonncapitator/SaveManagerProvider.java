@@ -3,14 +3,14 @@ package ru.exbo.bonn.bonncapitator;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraftforge.common.capabilities.*;
-import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SaveManagerProvider implements ICapabilitySerializable<CompoundTag> {
+    // https://www.youtube.com/watch?v=My70x9LzeUM
+
     public static Capability<SaveManager> CASINO_SAVE = CapabilityManager.get(new CapabilityToken<SaveManager>() { });
 
     private SaveManager manager = null;

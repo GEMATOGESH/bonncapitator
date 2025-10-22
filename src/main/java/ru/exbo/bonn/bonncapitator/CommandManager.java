@@ -41,8 +41,9 @@ public class CommandManager {
                 int result = sm.getCurrentAttempt(player.getStringUUID(), id);
 
                 context.getSource().getPlayer().sendSystemMessage(Component.literal(Integer.toString(result)));
+                return Command.SINGLE_SUCCESS;
             }
-            return Command.SINGLE_SUCCESS;
+            return 0;
         }
     }
 
@@ -67,8 +68,9 @@ public class CommandManager {
                 sm.resetShuffleBag(player.getStringUUID(), id);
 
                 context.getSource().getPlayer().sendSystemMessage(Component.literal("Done!"));
+                return Command.SINGLE_SUCCESS;
             }
-            return Command.SINGLE_SUCCESS;
+            return 0;
         }
     }
 
