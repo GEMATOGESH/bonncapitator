@@ -99,11 +99,7 @@ public class SaveManager {
 
     public void deserializeNBT(Tag nbt) {
         if (nbt.asCompound().isPresent()) {
-            String res = "";
-
-            if (nbt.asCompound().get().getString("playerHandler").isPresent()) {
-                res = nbt.asCompound().get().getString("playerHandler").get();
-            }
+            String res = nbt.asCompound().get().getString("playerHandler").get();
 
             Gson gson = new Gson();
             TypeToken<HashMap<String, HashMap<String, ShuffleBagSave>>> mapType = new TypeToken<>() { };
